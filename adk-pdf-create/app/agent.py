@@ -99,7 +99,7 @@ def generate_and_upload_swot_pdf(swot_analysis_text: str, company_name: str, too
             f.write(pdf_content)
         
         # Constructing the public URL (assuming the bucket allows public access)
-        public_url = f"https://storage.googleapis.com/{bucket_name}/{folder_name}/{file_name}"
+        public_url = f"https://storage.cloud.google.com/{full_path}"
         return public_url
     except Exception as e:
         tool_context.state['error'] = f"Failed to upload PDF to GCS: {e}"
@@ -112,7 +112,15 @@ pdf_generator_agent = Agent(
         model="gemini-2.5-flash",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    instruction="You are a PDF generator agent. Given SWOT analysis text and a company name, you will generate a PDF and upload it to GCS using the 'generate_and_upload_swot_pdf' tool. Finally, you will return the public URL of the uploaded PDF.",
+    instruction="""You are a PDF generator agent. Given SWOT analysis text 
+    and a company name, you will create a complete swot analysis.  After, you
+    will always ask the user if they want to generate a PDF.  If they do,
+    you will call the 'generate_and_upload_swot_pdf' tool to generate 
+    and upload it to GCS using the 'generate_and_upload_swot_pdf' tool.
+
+    The url should always be structured like the following:
+    https://storage.cloud.google.com/[bucket_name]/[folder_name]/[file_name]
+    """,
     tools=[generate_and_upload_swot_pdf],
 )
 
