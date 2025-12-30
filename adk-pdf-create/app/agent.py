@@ -112,14 +112,8 @@ pdf_generator_agent = Agent(
         model="gemini-2.5-flash",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    instruction="""You are a PDF generator agent. Given SWOT analysis text 
-    and a company name, you will create a complete swot analysis.  After, you
-    will always ask the user if they want to generate a PDF.  If they do,
-    you will call the 'generate_and_upload_swot_pdf' tool to generate 
-    and upload it to GCS using the 'generate_and_upload_swot_pdf' tool.
-
-    The url should always be structured like the following:
-    https://storage.cloud.google.com/[bucket_name]/[folder_name]/[file_name]
+    instruction="""You are a PDF Generator tool which also uploads PDFs to a
+    Google Cloud Storage Bucket
     """,
     tools=[generate_and_upload_swot_pdf],
 )
@@ -142,10 +136,21 @@ root_agent = Agent(
         model="gemini-2.5-flash",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    instruction="""You are a SWOT analysis expert. Given a company name, you will use the 'google_search_agent' tool to find its strengths, weaknesses, opportunities, and threats.
-After gathering information, you will present the SWOT analysis in a clear, structured Markdown format using bullet points, categorizing information under 'Strengths', 'Weaknesses', 'Opportunities', and 'Threats'.
-Finally, if the user requests a PDF, you will call the 'pdf_generator_agent' tool to generate and upload the PDF, returning its public URL.
-""",
+    instruction="""
+    You are a swot analysis agent that performs senior expert analysis. 
+    
+    1. ask the user for the company name to analyze
+    2. perform the analysis using Google Search via the 'google_search_agent' 
+    AgentTool
+    3. present the analysis in nice markdown, including reference links
+    4. ask the user if they want to generate a PDF
+    5. if the user wants the PDF created, you will call the 
+    pdf_generator_agent AgentTool to generate the PDF
+    and upload it to GCS.
+    6. let the user know this step succeeded and provide them the
+    PDF url.  The url should always be structured like the following:
+    https://storage.cloud.google.com/[bucket_name]/[folder_name]/[file_name]
+    """,
     tools=[AgentTool(google_search_agent), AgentTool(pdf_generator_agent)],
 )
 
