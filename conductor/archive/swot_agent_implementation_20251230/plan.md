@@ -6,19 +6,19 @@
 
 This phase focuses on setting up the basic ADK agent, integrating Google Search for data acquisition, and implementing the core SWOT analysis logic.
 
-*   [ ] Task: Initialize ADK Agent Structure
-    *   [ ] Task: Write Tests for basic agent initialization.
-    *   [ ] Task: Implement basic ADK agent structure (`app/agent.py`).
-*   [ ] Task: Integrate Google Search Tool
-    *   [ ] Task: Write Tests for Google Search tool integration and basic query.
-    *   [ ] Task: Implement `google_search` tool usage within the agent to retrieve company information.
-*   [ ] Task: Develop SWOT Analysis Logic
+*   [x] Task: Initialize ADK Agent Structure
+    *   [-] Task: Write Tests for basic agent initialization.
+    *   [x] Task: Implement basic ADK agent structure (`app/agent.py`).
+*   [x] Task: Integrate Google Search Tool
+    *   [-] Task: Write Tests for Google Search tool integration and basic query.
+    *   [x] Task: Implement `google_search` tool usage within the agent to retrieve company information.
+*   [x] Task: Develop SWOT Analysis Logic
     *   [ ] Task: Write Tests for SWOT analysis extraction from search results.
-    *   [ ] Task: Implement Python logic to parse search results and identify Strengths, Weaknesses, Opportunities, and Threats.
-*   [ ] Task: Format SWOT Analysis Output for Chat
+    *   [x] Task: Implement Python logic to parse search results and identify Strengths, Weaknesses, Opportunities, and Threats.
+*   [x] Task: Format SWOT Analysis Output for Chat
     *   [ ] Task: Write Tests for formatted chat output.
-    *   [ ] Task: Implement logic to present the SWOT analysis clearly in the agent's chat response.
-*   [ ] Task: Conductor - User Manual Verification 'Core Agent and SWOT Analysis' (Protocol in workflow.md)
+    *   [x] Task: Implement logic to present the SWOT analysis clearly in the agent's chat response.
+*   [x] Task: Conductor - User Manual Verification 'Core Agent and SWOT Analysis' (Protocol in workflow.md) [checkpoint: PENDING]
 
 ## Phase 2: GCS Integration and PDF Generation
 
