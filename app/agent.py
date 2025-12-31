@@ -89,7 +89,7 @@ def generate_and_upload_swot_pdf(swot_analysis_text: str, company_name: str, too
 
     # 2. Upload to GCS
     fs = gcsfs.GCSFileSystem(project=project_id)
-    bucket_name = "adk-pdf-create"
+    bucket_name = "adk-pdf-create1"
     folder_name = "pdfs"
     file_name = f"SWOT_{company_name.replace(' ', '_')}_{uuid.uuid4()}.pdf"
     full_path = f"{bucket_name}/{folder_name}/{file_name}"

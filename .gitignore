@@ -1,1 +1,8 @@
 deployment*
+.venv/
+.env
+.backup*
+app/.adk/
+.adk/
+.cloudbuild/
+app/__*
