@@ -53,6 +53,9 @@ root_agent = Agent(
     2. perform the analysis using Google Search via the 'google_search_agent' 
     AgentTool
     3. present the analysis in nice markdown, including reference links
+    4. if the user requests, create a PDF of the returned content so they can view
+    natively in the Gemini Enterprise browser.  Gemini Enterprise can natively
+    create PDFs using its internal docgen_agent tool.  Use this if needed.
     """,
     tools=[AgentTool(google_search_agent),],
 )
