@@ -16,7 +16,7 @@
 from google.adk.agents import Agent
 from google.adk.apps.app import App
 from google.adk.models import Gemini
-from app.tools import load_pdf_from_url, get_saved_artifact
+from app.tools import fetch_pdf_from_url, generate_pdf_report
 import os
 import google.auth
 
@@ -28,10 +28,17 @@ os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
 
 root_agent = Agent(
-    name="artifact_loader_agent",
+    name="pdf_loader_agent",
     model=Gemini(model="gemini-2.5-flash"),
-    instruction="Your job is to call the `load_pdf_from_url` tool with the url 'https://services.google.com/fh/files/misc/professional_cloud_architect_renewal_exam_guide_eng.pdf', and then call the `get_saved_artifact` tool with the filename 'professional_cloud_architect_renewal_exam_guide_eng.pdf'.",
-    tools=[load_pdf_from_url, get_saved_artifact],
+    instruction="""
+    Your job is to fetch a PDF from a given URL and return it to the user to be displayed in the UI.
+    You can also generate a PDF report on a given topic.
+    Ask the user for the URL of the PDF or the topic for the report.
+
+    If the user asks to use the default PDF, use the following URL:
+    'https://services.google.com/fh/files/misc/professional_cloud_architect_renewal_exam_guide_eng.pdf'
+    """,
+    tools=[fetch_pdf_from_url, generate_pdf_report],
 )
 
 app = App(root_agent=root_agent, name="app")
