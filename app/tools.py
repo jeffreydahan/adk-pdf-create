@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import io
 from google.adk.tools import tool_context as tool_context_module
 from google.genai import types
@@ -54,7 +55,9 @@ def log_info(message):
         cloud_logger.info(message)
 
 
-async def generate_pdf_report(tool_context: tool_context_module.ToolContext, topic: str) -> str:
+async def generate_pdf_report(
+    tool_context: tool_context_module.ToolContext, topic: str
+) -> dict:
     """
     Generates a PDF document about the given topic and returns it to the user.
     """
@@ -74,34 +77,28 @@ async def generate_pdf_report(tool_context: tool_context_module.ToolContext, top
         buffer.close()
         log_info(f"PDF bytes generated. Size: {len(pdf_bytes)} bytes.")
 
-        # Sanitize topic to create a valid filename
-        safe_topic = "".join(c if c.isalnum() or c in ['-', '_'] else "_" for c in topic)
-        file_name = f"return_to_user:{safe_topic}_report.pdf"
-        log_info(f"Sanitized filename for artifact: {file_name}")
+        # Base64 encode the bytes to store in the JSON-serializable state
+        pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
+        tool_context.state["pdf_base64"] = pdf_base64
+        log_info("PDF has been Base64 encoded and saved to session state.")
 
-        part = types.Part.from_bytes(
-            data=pdf_bytes,
-            mime_type="application/pdf",
-        )
-        log_info(f"Attempting to save artifact with name: {file_name} and part: {part}")
-        try:
-            await tool_context.save_artifact(file_name, part)
-            log_info("Successfully saved artifact to be returned to the user.")
-        except Exception as e:
-            log_info(f"Error during tool_context.save_artifact: {e}")
-            logging.exception(f"Detailed error during save_artifact for {topic}: {e}")
-            return f"Sorry, I encountered an error while saving the PDF artifact for '{topic}'."
-
-        return f"I have generated the PDF report on '{topic}'. You should see it in the chat. If a preview is not visible, please look for a download link."
+        return {
+            "status": "success",
+            "message": f"I have generated the PDF report on '{topic}'.",
+        }
 
     except Exception as e:
         log_info(f"Failed to generate PDF for topic {topic}: {e}")
         logging.exception(f"Detailed error during PDF generation for {topic}: {e}")
-        return f"Sorry, I encountered an error while generating the PDF for '{topic}'."
+        return {
+            "status": "error",
+            "message": f"Sorry, I encountered an error while generating the PDF for '{topic}'.",
+        }
 
 
-
-async def fetch_pdf_from_url(tool_context: tool_context_module.ToolContext, url: str):
+async def fetch_pdf_from_url(
+    tool_context: tool_context_module.ToolContext, url: str
+) -> dict:
     """
     Fetches a PDF from a public URL and returns it to the user.
 
@@ -120,32 +117,30 @@ async def fetch_pdf_from_url(tool_context: tool_context_module.ToolContext, url:
             response.raise_for_status()  # Raise an exception for bad status codes
 
             file_bytes = response.content
-            log_info(f"Successfully downloaded PDF from URL: {url}. Size: {len(file_bytes)} bytes.")
+            log_info(
+                f"Successfully downloaded PDF from URL: {url}. Size: {len(file_bytes)} bytes."
+            )
             mime_type = response.headers.get("Content-Type", "application/pdf")
 
             if "application/pdf" not in mime_type:
-                log_info(f"The content at the URL is not a PDF. MIME type found: {mime_type}")
-                return {"error": f"The content at the URL is not a PDF. MIME type found: {mime_type}"}
+                log_info(
+                    f"The content at the URL is not a PDF. MIME type found: {mime_type}"
+                )
+                return {
+                    "error": f"The content at the URL is not a PDF. MIME type found: {mime_type}"
+                }
 
-            file_name = os.path.basename(url)
-            if not file_name:
-                file_name = "downloaded.pdf"
+            # Base64 encode the bytes to store in the JSON-serializable state
+            pdf_base64 = base64.b64encode(file_bytes).decode("utf-8")
+            tool_context.state["pdf_base64"] = pdf_base64
+            log_info("PDF has been Base64 encoded and saved to session state.")
 
-            # Use the prefix to return to the user
-            artifact_name = "return_to_user:" + file_name
-            log_info(f"Sanitized filename for artifact: {artifact_name}")
+            file_name = os.path.basename(url) or "downloaded.pdf"
 
-            part = types.Part.from_bytes(data=file_bytes, mime_type="application/pdf")
-            log_info(f"Attempting to save artifact with name: {artifact_name} and part: {part}")
-            try:
-                await tool_context.save_artifact(artifact_name, part)
-                log_info("Successfully saved artifact to be returned to the user.")
-            except Exception as e:
-                log_info(f"Error during tool_context.save_artifact: {e}")
-                logging.exception(f"Detailed error during save_artifact for {url}: {e}")
-                return {"error": f"Sorry, I encountered an error while saving the PDF artifact for '{url}'."}
-            
-            return {"status": "success", "detail": f"Successfully fetched and returned '{file_name}'. If a preview is not visible, please look for a download link."}
+            return {
+                "status": "success",
+                "detail": f"Successfully fetched '{file_name}'.",
+            }
 
     except httpx.RequestError as e:
         log_info(f"Error fetching PDF from {url}: {e}")
